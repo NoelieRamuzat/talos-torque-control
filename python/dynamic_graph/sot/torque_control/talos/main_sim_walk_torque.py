@@ -50,7 +50,8 @@ robot.traj_gen = create_trajectory_generator(robot, dt)
 robot.traj_gen.q.recompute(0)
 
 # --- CoM trajectory
-init_value_com = np.loadtxt(folder + walk_type + "/com.dat", usecols=(0,1,2))[0]
+init_file_com = np.loadtxt(folder + walk_type + "/com.dat", usecols=(0,1,2))[0]
+init_value_com = None if walk_type == "isa" else init_file_com
 robot.com_traj_gen = create_com_traj_gen(robot, dt, init_value_com)
 robot.com_traj_gen.x.recompute(0)
 
@@ -59,7 +60,7 @@ robot.waist_traj_gen = create_waist_traj_gen("tg_waist_ref", robot, dt)
 robot.waist_traj_gen.x.recompute(0)
 
 # --- Angular momentum trajectory
-init_value_am = np.loadtxt(folder + walk_type + "/am.dat", usecols=(0,1,2))[0]
+init_value_am = None if walk_type == "isa" else (np.loadtxt(folder + walk_type + "/am.dat", usecols=(0,1,2))[0])
 robot.am_traj_gen = create_am_traj_gen(robot, dt, init_value_am)
 robot.am_traj_gen.x.recompute(0)
 
