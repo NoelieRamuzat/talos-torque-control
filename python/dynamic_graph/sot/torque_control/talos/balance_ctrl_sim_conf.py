@@ -80,13 +80,13 @@ kp_feet     = 100.0
 kd_feet     = 5#2.0*sqrt(kp_feet)
 
 # # CONTROLLER WEIGTHS
-w_com = 1e6
+w_com = 50
 w_com_vel  = 1e6
 w_posture = 1e-1 # weight of postural task
 w_forces = 1e-3
 w_waist = 10.0
 w_am = 2e-2
-w_feet = 1e3
+w_feet = 10
 
 # CONTACT PARAMETERS
 RIGHT_FOOT_SIZES  = np.array((0.1,  -0.11,  0.069,  -0.069)) # pos x, neg x, pos y, neg y size 
