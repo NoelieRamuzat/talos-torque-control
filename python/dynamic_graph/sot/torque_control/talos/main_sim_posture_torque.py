@@ -51,7 +51,7 @@ robot.base_estimator.v.recompute(0)
 # --- Simple inverse dynamic controller
 robot.inv_dyn = create_posture_task(robot, conf.balance_ctrl, dt)
 robot.inv_dyn.setControlOutputType("torque")
-robot.inv_dyn.kp_posture.value  = np.array((2000., 1000., 1000., 1000., 2000., 2000., 2000., 1000., 1000., 1000., 2000., 2000., 1500., 1500., 800., 800., 800., 800., 800., 800., 800., 800., 800., 800., 800., 800., 800., 800., 800., 800., 1000., 1000.)) # proportional gain of postural task
+robot.inv_dyn.kp_posture.value  = np.array((2000., 1000., 1000., 1000., 2000., 2000., 2000., 1000., 1000., 1000., 2000., 2000., 1500., 1500., 100., 100., 50., 50., 50., 50., 50., 10., 100., 100., 50., 50., 50., 50., 50., 10., 1000., 1000.)) # proportional gain of postural task
 robot.inv_dyn.kd_posture.value  = np.array(2 * np.sqrt(robot.inv_dyn.kp_posture.value))
 
 robot.inv_dyn.active_joints.value = np.ones(32)
@@ -73,9 +73,14 @@ robot.ff_torque.selec1(0, 6)
 robot.ff_torque.selec2(0, 32) 
 
 robot.ctrl_manager.addCtrlMode("torque")
-robot.ctrl_manager.setCtrlMode("lh-rh-hp-hy-lhy-lhr-lhp-lk-lap-lar-rhy-rhr-rhp-rk-rap-rar-ty-tp-lsy-lsr-lay-le-lwy-lwp-lwr-rsy-rsr-ray-re-rwy-rwp-rwr", "torque")
+robot.ctrl_manager.setCtrlMode("lh-rh-hp-hy-lhy-lhr-lhp-lk-lap-lar-rhy-rhr-rhp-rk-rap-rar-ty-tp-lsy-lsr-le-lwy-lwp-lwr-rsy-rsr-ray-re-rwy-rwp-rwr", "torque")
 plug(robot.ff_torque.sout, robot.ctrl_manager.signal('ctrl_torque'))
 
+robot.ctrl_manager.addCtrlMode("pos")
+robot.ctrl_manager.setCtrlMode("lay", "pos")
+arm_left_3_joint_ctrl = np.zeros(38)
+arm_left_3_joint_ctrl[22] = robot.device.robotState.value[22]
+robot.ctrl_manager.signal('ctrl_pos').value = arm_left_3_joint_ctrl
 
 robot.ctrl_manager.addCtrlMode("base")
 robot.ctrl_manager.setCtrlMode("freeflyer", "base")
@@ -95,6 +100,9 @@ robot.publisher = create_rospublish(robot, 'robot_publisher')
 create_topic(robot.publisher, robot.odom, 'sout', 'base_odom', robot=robot, data_type='vector')
 create_topic(robot.publisher, robot.inv_dyn, 'com', 'com', robot=robot, data_type='vector') 
 create_topic(robot.publisher, robot.inv_dyn, 'q_des', 'q_des', robot=robot, data_type='vector')
+create_topic(robot.publisher, robot.traj_gen, 'q', 'q_traj_gen', robot=robot, data_type='vector')
+create_topic(robot.publisher, robot.traj_gen, 'dq', 'dq_traj_gen', robot=robot, data_type='vector')
+create_topic(robot.publisher, robot.traj_gen, 'ddq', 'ddq_traj_gen', robot=robot, data_type='vector')
 create_topic(robot.publisher, robot.inv_dyn, 'tau_des', 'tau_des', robot=robot, data_type='vector')
 create_topic(robot.publisher, robot.base_estimator, 'q', 'base_q', robot=robot, data_type='vector')
 create_topic(robot.publisher, robot.base_estimator, 'v', 'base_v', robot=robot, data_type='vector')
@@ -103,12 +111,15 @@ create_topic(robot.publisher, robot.inv_dyn, 'left_foot_pos', 'LF_pos_inv_dyn', 
 create_topic(robot.publisher, robot.inv_dyn, 'right_foot_pos', 'RF_pos_inv_dyn', robot=robot, data_type='vector')
 
 create_topic(robot.publisher, robot.device, 'motorcontrol', 'motorcontrol', robot=robot, data_type='vector')
+create_topic(robot.publisher, robot.device, 'forceLLEG', 'forceLLEG', robot = robot, data_type='vector') # measured left wrench
+create_topic(robot.publisher, robot.device, 'forceRLEG', 'forceRLEG', robot = robot, data_type='vector')
 create_topic(robot.publisher, robot.device, 'ptorque', 'tau_meas', robot=robot, data_type='vector')
 create_topic(robot.publisher, robot.device, 'robotVelocity', 'device_rV', robot=robot, data_type='vector')
 create_topic(robot.publisher, robot.device, 'robotState', 'device_rq', robot=robot, data_type='vector')
 create_topic(robot.publisher, robot.device, 'state', 'device_q', robot=robot, data_type='vector')
 create_topic(robot.publisher, robot.device, 'velocity', 'device_v', robot=robot, data_type='vector') 
 create_topic(robot.publisher, robot.device_filters.vel_filter, 'x_filtered', 'v_filt', robot=robot, data_type='vector')
+create_topic(robot.publisher, robot.ctrl_manager, 'u_safe', 'u_safe', robot=robot, data_type='vector')
 
 # # --- TRACER
 # robot.tracer = TracerRealTime("tau_tracer")
